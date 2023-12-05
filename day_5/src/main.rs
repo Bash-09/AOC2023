@@ -64,12 +64,11 @@ fn parse_input(input: &str) -> Data {
     Data { seeds, maps }
 }
 
-fn part_1() {
-    let data = parse_input(INPUT);
+fn find_min(data: &Data) -> i64 {
+    use rayon::prelude::*;
 
-    let min = data
-        .seeds
-        .iter()
+    data.seeds
+        .par_iter()
         .map(|s| {
             data.maps.iter().fold(*s, |s, maps| {
                 let offset = maps
@@ -85,12 +84,28 @@ fn part_1() {
                 s + offset
             })
         })
-        .min();
-
-    println!("Min location: {}", min.unwrap());
+        .min()
+        .unwrap()
 }
 
-fn part_2() {}
+fn part_1() {
+    let data = parse_input(INPUT);
 
-#[cfg(test)]
-mod tests {}
+    let min = find_min(&data);
+
+    println!("Min location: {}", min);
+}
+
+fn part_2() {
+    let mut data = parse_input(INPUT);
+
+    let mut new_seeds = Vec::new();
+    for i in (0..data.seeds.len()).step_by(2) {
+        new_seeds.extend(data.seeds[i]..data.seeds[i] + data.seeds[i + 1]);
+    }
+    data.seeds = new_seeds;
+
+    let min = find_min(&data);
+
+    println!("Min location of ranges: {}", min);
+}
